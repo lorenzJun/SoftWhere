@@ -25,17 +25,17 @@ def validate_input(prompt, is_password=False, is_number=False, hide_input=False)
             user_input = input(prompt).strip()
 
         if not user_input:
-            print("Error: Input cannot be empty. Please try again.")
+            print(colored("Error: Input cannot be empty. Please try again.", "red"))
             continue
 
         if is_password:
             if len(user_input) < 4:
-                print("Error: Password must be at least 4 characters long.")
+                print(colored("Error: Password must be at least 4 characters long.", "red"))
                 continue
 
         if is_number:
             if not user_input.isdigit():
-                print("Error: Please enter a valid number.")
+                print(colored("Error: Please enter a valid number.", "red"))
                 continue
             return int(user_input)
 
@@ -69,20 +69,20 @@ def register_user():
     confirm_password = validate_input("Confirm password: ", is_password=True)
     
     if password != confirm_password:
-        print("Error: Passwords do not match!")
+        print(colored("Error: Passwords do not match!", "red"))
         return
 
     while True:
         role = validate_input("Role (admin/employee): ").lower()
         if role in ['admin', 'employee']:
             break
-        print("Error: Role must be either 'admin' or 'employee'")
+        print(colored("Error: Role must be either 'admin' or 'employee'", "red"))
 
     users = load_users()
 
     for user in users:
         if user['username'] == username:
-            print("Username already exists!")
+            print(colored("Username already exists!", "red"))
             return
 
     users.append({
@@ -91,13 +91,12 @@ def register_user():
         "role": role
     })
     save_users(users)
-    print("User registered successfully!")
+    print(colored("User registered successfully!", "green"))
 
 def login_menu():
     while True:
         title = pyfiglet.figlet_format("SOFTWHERE")
         print(colored(title, "blue"))
-
         print(colored("[1] Login", "green"))
         print(colored("[2] Exit Program", "red"))
         
@@ -128,7 +127,7 @@ def login_menu():
             print(colored("Exiting program. Goodbye!", "red"))
             return None
         else:
-            print("Invalid choice. Please enter 1 or 2.")
+            print(colored("Invalid choice. Please enter 1 or 2.", "red"))
 
 # ------------------ LICENSE SYSTEM ------------------
 
@@ -149,20 +148,56 @@ def save_licenses(licenses):
 def add_license():
     while True:
         licenses = load_licenses()
+        users = load_users()  # Load users for validation
+        
         print("\n--- Add New License ---")
         
         # Collect license details from user
         license = {
             "software": validate_input("Software Name: "),
             "license_key": validate_input("License Key: "),
-            "user": validate_input("Assigned To (Name): "),
+        }
+        
+        # Validate assigned user exists in users.json
+        while True:
+            assigned_user = validate_input("Assigned To (Username): ")
+            user_exists = any(user['username'] == assigned_user for user in users)
+            if user_exists:
+                license["user"] = assigned_user
+                break
+            print(colored(f"Error: User '{assigned_user}' not found in system. Please enter a valid username.", "red"))
+        
+        # Function to validate date format
+        def validate_date(prompt):
+            while True:
+                date_str = validate_input(prompt)
+                try:
+                    datetime.strptime(date_str, "%Y-%m-%d")
+                    return date_str
+                except ValueError:
+                    print(colored("Error: Invalid date format. Please use YYYY-MM-DD format (e.g., 2023-12-31)", "red"))
+        
+        # Get and validate install date
+        license["install_date"] = validate_date("Install Date (YYYY-MM-DD): ")
+        
+        # Get and validate expiry date (must be after install date)
+        while True:
+            license["expiry_date"] = validate_date("Expiry Date (YYYY-MM-DD): ")
+            install_date = datetime.strptime(license["install_date"], "%Y-%m-%d")
+            expiry_date = datetime.strptime(license["expiry_date"], "%Y-%m-%d")
+            
+            if expiry_date <= install_date:
+                print(colored("Error: Expiry date must be after install date.", "red"))
+            else:
+                break
+        
+        # Rest of the license details
+        license.update({
             "assigned_device": validate_input("Assigned Device: "),
-            "install_date": validate_input("Install Date (YYYY-MM-DD): "),
-            "expiry_date": validate_input("Expiry Date (YYYY-MM-DD): "),
             "usage_limit": validate_input("Usage Limit: ", is_number=True),
             "current_usage": validate_input("Current Usage: ", is_number=True),
             "status": "active"
-        }
+        })
 
         # Display the entered license details
         print("\n--- License Details ---")
@@ -172,15 +207,15 @@ def add_license():
         # Ask for confirmation
         confirm = validate_input("\nDo you want to save this license? (y/n): ").lower()
         if confirm != 'y':
-            print("License not saved.")
+            print(colored("License not saved.", "red"))
         else:
             # Check if license already exists
             if any(lic['license_key'] == license['license_key'] for lic in licenses):
-                print("License with this key already exists!")
+                print(colored("License with this key already exists!", "red"))
             else:
                 licenses.append(license)
                 save_licenses(licenses)
-                print("License added successfully!")
+                print(colored("License added successfully!", "green"))
 
         # Ask user if they want to add more licenses
         if input("\nAdd another license? (y/n): ").lower() != 'y':
@@ -190,7 +225,7 @@ def add_license():
 def view_licenses():
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found in the system.")
+        print(colored("\nNo licenses found in the system.", "red"))
         return
 
     print("\n--- All Licenses ---")
@@ -201,7 +236,7 @@ def view_licenses():
 def search_license():
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found in the system.")
+        print(colored("\nNo licenses found in the system.", "red"))
         return
 
     # Convert user input to lowercase for case-insensitive search
@@ -213,13 +248,13 @@ def search_license():
         for lic in found:
             print(json.dumps(lic, indent=4))
     else:
-        print("No license found.")
+        print(colored("No license found.", "red"))
 
 # Check and display expired licenses
 def check_expired():
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found in the system.")
+        print(colored("\nNo licenses found in the system.", "red"))
         return
 
     today = datetime.now().date()
@@ -237,7 +272,7 @@ def check_expired():
             print(f"Invalid date format for {lic['software']}")
 
     if not expired_found:
-        print("No expired licenses found.")
+        print(colored("No expired licenses found.", "red"))
 
     save_licenses(licenses) # Save any status changes
 
@@ -245,7 +280,7 @@ def check_expired():
 def update_usage_count():
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found in the system.")
+        print(colored("\nNo licenses found in the system.", "red"))
         return
 
     software = validate_input("\nEnter software name to update usage: ").strip().lower()
@@ -262,12 +297,12 @@ def update_usage_count():
             break
 
     if not found:
-        print("Software not found.")
+        print(colored("Software not found.", "red"))
 
 def edit_license():
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found in the system.")
+        print(colored("\nNo licenses found in the system.", "red"))
         return
 
     # Search for licenses (case-insensitive)
@@ -275,7 +310,7 @@ def edit_license():
     found = [lic for lic in licenses if keyword in lic['software'].lower()]
     
     if not found:
-        print("No licenses found with that name.")
+        print(colored("No licenses found with that name.", "red"))
         return
     
     # Display matching licenses
@@ -286,7 +321,7 @@ def edit_license():
     # Select license to edit
     choice = validate_input("\nSelect license to edit (number): ", is_number=True)
     if choice < 1 or choice > len(found):
-        print("Invalid selection.")
+        print(colored("Invalid selection.", "red"))
         return
     
     license_to_edit = found[choice-1]
@@ -308,7 +343,7 @@ def edit_license():
         if field_choice == 0:
             break
         if field_choice < 1 or field_choice > 9:
-            print("Invalid choice.")
+            print(colored("Invalid choice.", "red"))
             continue
 
         field_name = fields[field_choice-1]
@@ -317,7 +352,7 @@ def edit_license():
         # Special validation for key fields
         if field_name == "license_key" and new_value != original_key:
             if any(lic['license_key'] == new_value for lic in licenses):
-                print("Error: This license key already exists!")
+                print(colored("Error: This license key already exists!", "red"))
                 continue
 
         # Validate date formats
@@ -325,27 +360,27 @@ def edit_license():
             try:
                 datetime.strptime(new_value, "%Y-%m-%d")
             except ValueError:
-                print("Invalid date format! Use YYYY-MM-DD.")
+                print(colored("Invalid date format! Use YYYY-MM-DD.", "red"))
                 continue
 
         # Validate number fields
         if field_name in ["usage_limit", "current_usage"]:
             if not new_value.isdigit():
-                print("Error: Must be a number!")
+                print(colored("Error: Must be a number!", "red"))
                 continue
             new_value = int(new_value)
 
         # Validate status field
         if field_name == "status":
             if new_value.lower() not in ["active", "expired"]:
-                print("Error: Status must be 'active' or 'expired'")
+                print(colored("Error: Status must be 'active' or 'expired'", "red"))
                 continue
             new_value = new_value.lower()
 
         # Update and save
         license_to_edit[field_name] = new_value
         save_licenses(licenses)
-        print("License updated successfully!")
+        print(colored("License updated successfully!", "green"))
 
         # Ask for another edit
         if input("\nEdit another field? (y/n): ").lower() != 'y':
@@ -355,27 +390,62 @@ def edit_license():
 def delete_license():
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found in the system.")
+        print(colored("\nNo licenses found in the system.", "orange"))
         return
 
+    view_licenses()
     software = validate_input("\nEnter software name to delete: ").strip().lower()
-    original_count = len(licenses)
+    # Find all matching licenses (case-insensitive)
+    matching_licenses = [lic for lic in licenses if software in lic['software'].lower()]
 
-    # Case-insensitive comparison
-    licenses = [lic for lic in licenses if software not in lic['software'].lower()]
+    if not matching_licenses:
+        print(colored("No matching license found.", "orange"))
+        return
 
-    if len(licenses) != original_count:
-        save_licenses(licenses)
-        print("License deleted.")
+    if len(matching_licenses) == 1:
+        # If only one match, show details and confirm deletion
+        lic = matching_licenses[0]
+        print("\n--- Matching License ---")
+        print(f"Software: {lic['software']}")
+        print(f"License Key: {lic['license_key']}")
+        print(f"Assigned To: {lic['user']}")
+        print(f"Expiry Date: {lic['expiry_date']}")
+        
+        confirm = validate_input("\nAre you sure you want to delete this license? (y/n): ").lower()
+        if confirm == 'y':
+            licenses.remove(lic)
+            save_licenses(licenses)
+            print(colored("License deleted successfully!", "green"))
     else:
-        print("No matching license found.")
+        # If multiple matches, show list and let user choose
+        print("\n--- Multiple Matching Licenses ---")
+        for i, lic in enumerate(matching_licenses, 1):
+            print(f"\n{i}. Software: {lic['software']}")
+            print(f"   License Key: {lic['license_key']}")
+            print(f"   Assigned To: {lic['user']}")
+            print(f"   Expiry Date: {lic['expiry_date']}")
+
+        while True:
+            choice = validate_input("\nEnter the number of the license to delete (or 0 to cancel): ", is_number=True)
+            if choice == 0:
+                return
+            if 1 <= choice <= len(matching_licenses):
+                selected_license = matching_licenses[choice-1]
+                confirm = validate_input(f"Are you sure you want to delete license '{selected_license['software']}' (Key: {selected_license['license_key']})? (y/n): ").lower()
+                if confirm == 'y':
+                    licenses.remove(selected_license)
+                    save_licenses(licenses)
+                    print(colored("License deleted successfully!", "green"))
+                break
+            else:
+                print(colored(f"Please enter a number between 1 and {len(matching_licenses)} or 0 to cancel.", "red"))
 
 # Export license data to a CSV file
 def export_to_csv():
     import csv
     licenses = load_licenses()
     if not licenses:
-        print("\nNo licenses found to export.")
+        print(colored("\nNo licenses found to export.", "red"))
         return
 
     # Write license data to CSV file
@@ -383,7 +453,7 @@ def export_to_csv():
         writer = csv.DictWriter(f, fieldnames=licenses[0].keys())
         writer.writeheader()
         writer.writerows(licenses)
-    print("Licenses exported to licenses_export.csv")
+    print(colored("Licenses exported to licenses_export.csv", "green"))
 
 # ------------------ MAIN MENU ------------------
 
@@ -428,9 +498,9 @@ def admin_menu():
                 print(colored("Logging out...", "red"))
                 return
             else:
-                print("Invalid choice. Please enter a number between 1-10.")
+                print(colored("Invalid choice. Please enter a number between 1-10.", "red"))
         except ValueError:
-            print("Invalid input. Please try again.")
+            print(colored("Invalid input. Please try again.", "red"))
 
 def employee_menu():
     while True:
@@ -461,9 +531,9 @@ def employee_menu():
                 print(colored("Logging out...", "red"))
                 return  # Return to login menu
             else:
-                print("Invalid choice. Please enter a number between 1-5.")
+                print(colored("Invalid choice. Please enter a number between 1-5.", "red"))
         except ValueError:
-            print("Invalid input. Please try again.")
+            print(colored("Invalid input. Please try again.", "red"))
 
 # ------------------ ENTRY POINT ------------------
 
@@ -473,8 +543,10 @@ if __name__ == "__main__":
 
     # If no users exist, force admin creation
     if not users:
+        title = pyfiglet.figlet_format("SOFTWHERE")
+        print(colored(title, "blue"))
         print("\n=== FIRST-TIME SETUP ===")
-        print("No existing accounts found. Create an admin account.")
+        print(colored("No existing accounts found. Create an admin account.", "blue"))
         username = validate_input("Admin username: ")
         password = validate_input("Admin password (Must be at least 4 characters long): ", is_password=True)
 
@@ -484,7 +556,7 @@ if __name__ == "__main__":
             "role": "admin"
         })
         save_users(users)
-        print("\nAdmin account created successfully! Please login.\n")
+        print(colored("\nAdmin account created successfully! Please login.\n", "green"))
 
     # Main program loop
     while True:
