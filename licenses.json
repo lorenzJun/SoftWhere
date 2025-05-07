@@ -1,0 +1,112 @@
+[
+    {
+        "software": "AutoCAD",
+        "license_key": "XYZ-123-ACAD",
+        "user": "Engineer A",
+        "assigned_device": "Laptop-001",
+        "install_date": "2024-05-01",
+        "expiry_date": "2025-05-01",
+        "usage_limit": 100,
+        "current_usage": 5,
+        "status": "expired"
+    },
+    {
+        "software": "MATLAB",
+        "license_key": "ABC-456-MATLAB",
+        "user": "Engineer B",
+        "assigned_device": "Desktop-002",
+        "install_date": "2023-04-15",
+        "expiry_date": "2024-04-15",
+        "usage_limit": 50,
+        "current_usage": 45,
+        "status": "expired"
+    },
+    {
+        "software": "SolidWorks",
+        "license_key": "SWK-789-SLDW",
+        "user": "Engineer C",
+        "assigned_device": "Workstation-003",
+        "install_date": "2024-01-10",
+        "expiry_date": "2025-01-10",
+        "usage_limit": 200,
+        "current_usage": 150,
+        "status": "expired"
+    },
+    {
+        "software": "LabVIEW",
+        "license_key": "LVW-321-NI",
+        "user": "Engineer D",
+        "assigned_device": "LabPC-004",
+        "install_date": "2023-09-01",
+        "expiry_date": "2024-09-01",
+        "usage_limit": 75,
+        "current_usage": 60,
+        "status": "expired"
+    },
+    {
+        "software": "ANSYS",
+        "license_key": "ANS-654-CAE",
+        "user": "Engineer E",
+        "assigned_device": "SimRig-005",
+        "install_date": "2022-12-01",
+        "expiry_date": "2023-12-01",
+        "usage_limit": 120,
+        "current_usage": 120,
+        "status": "expired"
+    },
+    {
+        "software": "Proteus",
+        "license_key": "PRT-987-PCB",
+        "user": "Engineer F",
+        "assigned_device": "BoardDev-006",
+        "install_date": "2024-03-20",
+        "expiry_date": "2025-03-20",
+        "usage_limit": 80,
+        "current_usage": 30,
+        "status": "expired"
+    },
+    {
+        "software": "Visual Studio",
+        "license_key": "VS-111-MSDN",
+        "user": "Engineer G",
+        "assigned_device": "DevPC-007",
+        "install_date": "2025-01-01",
+        "expiry_date": "2026-01-01",
+        "usage_limit": 200,
+        "current_usage": 10,
+        "status": "active"
+    },
+    {
+        "software": "Fusion 360",
+        "license_key": "FUS-222-ADSK",
+        "user": "Engineer H",
+        "assigned_device": "CNC-008",
+        "install_date": "2024-11-01",
+        "expiry_date": "2025-11-01",
+        "usage_limit": 90,
+        "current_usage": 20,
+        "status": "active"
+    },
+    {
+        "software": "Code::Blocks",
+        "license_key": "CB-333-CODE",
+        "user": "Engineer I",
+        "assigned_device": "DevBoard-009",
+        "install_date": "2024-07-15",
+        "expiry_date": "2025-07-15",
+        "usage_limit": 60,
+        "current_usage": 12,
+        "status": "active"
+    },
+    {
+        "software": "Multisim",
+        "license_key": "MSM-444-CIR",
+        "user": "Engineer J",
+        "assigned_device": "CircuitLab-010",
+        "install_date": "2024-05-01",
+        "expiry_date": "2025-10-01",
+        "usage_limit": 150,
+        "current_usage": 99,
+        "status": "active"
+    }
+]
