@@ -27,8 +27,8 @@ A Python-based console application for managing software licenses and tracking u
 
 project-folder/
 
-users.json # Stores user login data
-licenses.json # Stores software license records
-licenses_export.csv # (Optional) Exported data file
-license_inventory.py # Main Python script (this project)
-README.md # This file
+- users.json # Stores user login data
+- licenses.json # Stores software license records
+- licenses_export.csv # (Optional) Exported data file
+- license_inventory.py # Main Python script (this project)
+- README.md # This file
