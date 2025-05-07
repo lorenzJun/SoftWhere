@@ -291,49 +291,65 @@ def edit_license():
     
     license_to_edit = found[choice-1]
     original_key = license_to_edit['license_key']
-    
-    # Display editable fields
-    print("\n--- Editable Fields ---")
-    fields = [
-        "software", "license_key", "user", "assigned_device",
-        "install_date", "expiry_date", "usage_limit", "current_usage", "status"
-    ]
-    for i, field in enumerate(fields, 1):
-        print(f"{i}. {field.replace('_', ' ').title()}")
-    
-    field_choice = validate_input("\nChoose field to edit (1-9): ", is_number=True)
-    if field_choice < 1 or field_choice > 9:
-        print("Invalid choice.")
-        return
-    
-    field_name = fields[field_choice-1]
-    new_value = validate_input(f"Enter new {field_name.replace('_', ' ')}: ")
-    
-    # Special validation for key fields
-    if field_name == "license_key" and new_value != original_key:
-        if any(lic['license_key'] == new_value for lic in licenses):
-            print("Error: This license key already exists!")
-            return
-    
-    # Validate date formats
-    if field_name in ["install_date", "expiry_date"]:
-        try:
-            datetime.strptime(new_value, "%Y-%m-%d")
-        except ValueError:
-            print("Invalid date format! Use YYYY-MM-DD.")
-            return
-    
-    # Validate number fields
-    if field_name in ["usage_limit", "current_usage"]:
-        if not new_value.isdigit():
-            print("Error: Must be a number!")
-            return
-        new_value = int(new_value)
-    
-    # Update and save
-    license_to_edit[field_name] = new_value
-    save_licenses(licenses)
-    print("License updated successfully!")
+
+    # Continuous editing loop
+    while True:
+        # Display editable fields
+        print("\n--- Editable Fields ---")
+        fields = [
+            "software", "license_key", "user", "assigned_device",
+            "install_date", "expiry_date", "usage_limit", "current_usage", "status"
+        ]
+        for i, field in enumerate(fields, 1):
+            print(f"{i}. {field.replace('_', ' ').title()}")
+
+        # Get field choice
+        field_choice = validate_input("\nChoose field to edit (1-9) or 0 to cancel: ", is_number=True)
+        if field_choice == 0:
+            break
+        if field_choice < 1 or field_choice > 9:
+            print("Invalid choice.")
+            continue
+
+        field_name = fields[field_choice-1]
+        new_value = validate_input(f"Enter new {field_name.replace('_', ' ')} (current: {license_to_edit[field_name]}): ")
+
+        # Special validation for key fields
+        if field_name == "license_key" and new_value != original_key:
+            if any(lic['license_key'] == new_value for lic in licenses):
+                print("Error: This license key already exists!")
+                continue
+
+        # Validate date formats
+        if field_name in ["install_date", "expiry_date"]:
+            try:
+                datetime.strptime(new_value, "%Y-%m-%d")
+            except ValueError:
+                print("Invalid date format! Use YYYY-MM-DD.")
+                continue
+
+        # Validate number fields
+        if field_name in ["usage_limit", "current_usage"]:
+            if not new_value.isdigit():
+                print("Error: Must be a number!")
+                continue
+            new_value = int(new_value)
+
+        # Validate status field
+        if field_name == "status":
+            if new_value.lower() not in ["active", "expired"]:
+                print("Error: Status must be 'active' or 'expired'")
+                continue
+            new_value = new_value.lower()
+
+        # Update and save
+        license_to_edit[field_name] = new_value
+        save_licenses(licenses)
+        print("License updated successfully!")
+
+        # Ask for another edit
+        if input("\nEdit another field? (y/n): ").lower() != 'y':
+            break
 
 # Delete license entries based on software name
 def delete_license():
