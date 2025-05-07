@@ -264,6 +264,77 @@ def update_usage_count():
     if not found:
         print("Software not found.")
 
+def edit_license():
+    licenses = load_licenses()
+    if not licenses:
+        print("\nNo licenses found in the system.")
+        return
+
+    # Search for licenses (case-insensitive)
+    keyword = validate_input("\nEnter software name to edit: ").strip().lower()
+    found = [lic for lic in licenses if keyword in lic['software'].lower()]
+    
+    if not found:
+        print("No licenses found with that name.")
+        return
+    
+    # Display matching licenses
+    print("\n--- Matching Licenses ---")
+    for i, lic in enumerate(found, 1):
+        print(f"{i}. {lic['software']} (Key: {lic['license_key']})")
+    
+    # Select license to edit
+    choice = validate_input("\nSelect license to edit (number): ", is_number=True)
+    if choice < 1 or choice > len(found):
+        print("Invalid selection.")
+        return
+    
+    license_to_edit = found[choice-1]
+    original_key = license_to_edit['license_key']
+    
+    # Display editable fields
+    print("\n--- Editable Fields ---")
+    fields = [
+        "software", "license_key", "user", "assigned_device",
+        "install_date", "expiry_date", "usage_limit", "current_usage", "status"
+    ]
+    for i, field in enumerate(fields, 1):
+        print(f"{i}. {field.replace('_', ' ').title()}")
+    
+    field_choice = validate_input("\nChoose field to edit (1-9): ", is_number=True)
+    if field_choice < 1 or field_choice > 9:
+        print("Invalid choice.")
+        return
+    
+    field_name = fields[field_choice-1]
+    new_value = validate_input(f"Enter new {field_name.replace('_', ' ')}: ")
+    
+    # Special validation for key fields
+    if field_name == "license_key" and new_value != original_key:
+        if any(lic['license_key'] == new_value for lic in licenses):
+            print("Error: This license key already exists!")
+            return
+    
+    # Validate date formats
+    if field_name in ["install_date", "expiry_date"]:
+        try:
+            datetime.strptime(new_value, "%Y-%m-%d")
+        except ValueError:
+            print("Invalid date format! Use YYYY-MM-DD.")
+            return
+    
+    # Validate number fields
+    if field_name in ["usage_limit", "current_usage"]:
+        if not new_value.isdigit():
+            print("Error: Must be a number!")
+            return
+        new_value = int(new_value)
+    
+    # Update and save
+    license_to_edit[field_name] = new_value
+    save_licenses(licenses)
+    print("License updated successfully!")
+
 # Delete license entries based on software name
 def delete_license():
     licenses = load_licenses()
@@ -304,22 +375,20 @@ def export_to_csv():
 def admin_menu():
     while True:
         try:
-            # Display ASCII-style header
             menu_gui = pyfiglet.figlet_format("Admin License Inventory Menu")
             print(colored(menu_gui, "green"))
 
-            # Admin options
             print("[1] Register New User")
             print("[2] Add New License")
             print("[3] View All Licenses")
             print("[4] Search License")
             print("[5] Check Expired Licenses")
             print("[6] Update Usage Count")
-            print("[7] Delete License")
-            print("[8] Export to CSV")
-            print(colored("[9] Logout", "red"))
+            print("[7] Edit License")  # NEW OPTION
+            print("[8] Delete License")
+            print("[9] Export to CSV")
+            print(colored("[10] Logout", "red"))  # Updated logout number
 
-            # Get user input
             choice = validate_input("\nEnter your choice: ", is_number=True)
             if choice == 1:
                 register_user()
@@ -333,15 +402,17 @@ def admin_menu():
                 check_expired()
             elif choice == 6:
                 update_usage_count()
-            elif choice == 7:
-                delete_license()
+            elif choice == 7:  # NEW CASE
+                edit_license()
             elif choice == 8:
-                export_to_csv()
+                delete_license()
             elif choice == 9:
+                export_to_csv()
+            elif choice == 10:  # Updated from 9
                 print(colored("Logging out...", "red"))
-                return  # Return to login menu 
+                return
             else:
-                print("Invalid choice. Please enter a number between 1-9.")
+                print("Invalid choice. Please enter a number between 1-10.")
         except ValueError:
             print("Invalid input. Please try again.")
 
