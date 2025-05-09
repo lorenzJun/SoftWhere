@@ -470,7 +470,7 @@ def admin_menu():
             print("[4] Search License")
             print("[5] Check Expired Licenses")
             print("[6] Update Usage Count")
-            print("[7] Edit License")  # NEW OPTION
+            print("[7] Edit License")
             print("[8] Delete License")
             print("[9] Export to CSV")
             print(colored("[10] Logout", "red"))  # Updated logout number
